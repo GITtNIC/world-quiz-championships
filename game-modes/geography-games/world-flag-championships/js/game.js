@@ -14,7 +14,13 @@ let gameState = {
     gameActive: false,
     totalQuestions: 20,
     awaitingAcknowledgment: false, // Track if waiting for player acknowledgment after 2 wrong attempts
-    lastCorrectAnswer: null // Store the correct answer for validation
+    lastCorrectAnswer: null, // Store the correct answer for validation
+    startTime: null, // Track when the game started
+    correctFirstTry: 0, // Track first try correct answers
+    correctSecondTry: 0, // Track second try correct answers
+    failedQuestions: 0, // Track third try wrong answers
+    bestStreak: 0, // Track the best streak of correct answers
+    currentStreak: 0 // Current streak counter
 };
 
 /**
@@ -73,7 +79,7 @@ async function initGame() {
         // Initialize game state
         gameState.timeLimit = settings.timeLimit || 180;
         gameState.timeRemaining = gameState.timeLimit;
-        gameState.totalQuestions = Math.min(20, gameState.countries.length);
+        gameState.totalQuestions = gameState.countries.length;
 
         // Shuffle countries for random order
         shuffleArray(gameState.countries);
@@ -113,6 +119,7 @@ function setupUI() {
  */
 function startGame() {
     gameState.gameActive = true;
+    gameState.startTime = Date.now(); // Record when the game starts for accurate time calculation
 
     if (gameState.timeLimit > 0) {
         startTimer();
@@ -256,6 +263,14 @@ function showErrorPlaceholder() {
 function submitAnswer() {
     if (!gameState.gameActive) return;
 
+    const country = gameState.countries[gameState.currentQuestionIndex];
+    const currentAttempts = gameState.attempts[country.id] || 0;
+
+    // Prevent submission if already made 3 or more attempts on this question
+    if (currentAttempts >= 3) {
+        return;
+    }
+
     const answerInput = document.getElementById('answer-input');
     const feedbackElement = document.getElementById('feedback');
     const attemptElement = document.getElementById('attempt-text');
@@ -263,33 +278,6 @@ function submitAnswer() {
     if (!answerInput || !feedbackElement || !attemptElement) return;
 
     const userAnswer = answerInput.value.trim().toLowerCase();
-    const country = gameState.countries[gameState.currentQuestionIndex];
-
-    // Handle acknowledgment case (after 2 wrong attempts)
-    if (gameState.awaitingAcknowledgment) {
-        if (!userAnswer) {
-            // Player pressed Enter with empty field - acknowledge and move on
-            moveToNextQuestion();
-        } else {
-            // Check if they typed the correct answer
-            const isCorrectNow = GameLogic.validateAnswer(userAnswer, country);
-            if (isCorrectNow) {
-                // They got it right now - give them 5 points for learning
-                gameState.score += 5;
-                updateScore(gameState.score);
-                showFeedback(`Correct! +5 points for getting it right!`, 'success');
-                setTimeout(() => {
-                    moveToNextQuestion();
-                }, 2500);
-            } else {
-                // Still wrong - encourage them to try the correct answer or acknowledge
-                showFeedback(`Still incorrect. Type '${country.name}' to practice, or press Enter to continue`, 'warning');
-                answerInput.value = '';
-                answerInput.focus();
-            }
-        }
-        return;
-    }
 
     if (!userAnswer) {
         showFeedback('Please enter an answer', 'warning');
@@ -307,12 +295,41 @@ function submitAnswer() {
     gameState.attempts[country.id]++;
 
     if (isCorrect) {
-        // Correct answer
-        const points = gameState.attempts[country.id] === 1 ? 10 : 5;
+        // Correct answer - track statistics and update streak
+        if (gameState.attempts[country.id] === 1) {
+            gameState.correctFirstTry++;
+        } else if (gameState.attempts[country.id] === 2) {
+            gameState.correctSecondTry++;
+        }
+        // Third try correct doesn't count toward first/second stats
+
+        // Update streak
+        gameState.currentStreak++;
+        if (gameState.currentStreak > gameState.bestStreak) {
+            gameState.bestStreak = gameState.currentStreak;
+        }
+
+        // Points based on attempt number
+        let points = 0;
+        if (gameState.attempts[country.id] === 1) {
+            points = 10; // First try
+        } else if (gameState.attempts[country.id] === 2) {
+            points = 5;  // Second try
+        } else {
+            points = 0;  // Third try - 0 points for educational attempt
+        }
+
         gameState.score += points;
         updateScore(gameState.score);
 
-        showFeedback(`Correct! +${points} points`, 'success');
+        let feedbackMessage;
+        if (points === 0) {
+            feedbackMessage = 'Correct!';
+        } else {
+            feedbackMessage = `Correct! +${points} points`;
+        }
+
+        showFeedback(feedbackMessage, 'success');
 
         // Move to next question after delay
         setTimeout(() => {
@@ -322,13 +339,27 @@ function submitAnswer() {
         }, 2000);
 
     } else {
+        // Wrong answer - reset streak
+        gameState.currentStreak = 0;
         // Wrong answer
-        if (gameState.attempts[country.id] >= 2) {
-            // Second attempt failed - show correct answer and wait for acknowledgment
-            gameState.awaitingAcknowledgment = true;
-            gameState.lastCorrectAnswer = country.name;
-            showFeedback(`Wrong! The correct answer is: ${country.name}. Type it correctly for +5 points, or press Enter to continue`, 'error');
-            attemptElement.textContent = 'Type correct answer or press Enter';
+        if (gameState.attempts[country.id] >= 3) {
+            // Third attempt failed - track as failed question
+            gameState.failedQuestions++;
+
+            // Third attempt failed - show correct answer and move on (0 points)
+            showFeedback(`Incorrect! The answer was: ${country.name}`, 'error');
+
+            // Move to next question after delay
+            setTimeout(() => {
+                gameState.currentQuestionIndex++;
+                updateProgress(gameState.currentQuestionIndex, gameState.totalQuestions);
+                showNextQuestion();
+            }, 3000);
+
+        } else if (gameState.attempts[country.id] === 2) {
+            // Second attempt failed - show correct answer as hint for educational try
+            showFeedback(`The correct answer is: ${country.name}`, 'info');
+            attemptElement.textContent = 'Final Try (0 points)';
             answerInput.value = '';
             answerInput.focus();
 
@@ -425,12 +456,21 @@ function endGame() {
     gameState.gameActive = false;
     if (gameState.timer) clearInterval(gameState.timer);
 
-    // Save results
+    // Calculate actual time taken
+    const endTime = Date.now();
+    const timeTakenSeconds = gameState.startTime ? Math.floor((endTime - gameState.startTime) / 1000) : gameState.timeLimit;
+
+    // Save detailed results for accurate statistics
     const results = {
         score: gameState.score,
         totalQuestions: gameState.totalQuestions,
         timeLimit: gameState.timeLimit,
+        timeTaken: timeTakenSeconds, // Actual time used
         completedQuestions: gameState.currentQuestionIndex,
+        correctFirstTry: gameState.correctFirstTry,
+        correctSecondTry: gameState.correctSecondTry,
+        failedQuestions: gameState.failedQuestions,
+        bestStreak: gameState.bestStreak,
         date: new Date().toISOString()
     };
 

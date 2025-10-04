@@ -73,6 +73,26 @@
     transition: all 0.3s ease;
 }
 
+.feedback-display.success {
+    color: #22c55e;
+    font-size: var(--font-size-lg);
+}
+
+.feedback-display.error {
+    color: #ef4444;
+    font-size: var(--font-size-lg);
+}
+
+.feedback-display.warning {
+    color: #ea580c;
+    font-size: var(--font-size-lg);
+}
+
+.feedback-display.info {
+    color: #3b82f6;
+    font-size: var(--font-size-base);
+}
+
 .feedback-display.correct {
     color: var(--success-color);
     font-size: var(--font-size-lg);

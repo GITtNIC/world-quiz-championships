@@ -1,5 +1,30 @@
 /* Results Screen Styles */
 
+.game-header {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #1d4ed8 100%);
+    color: white;
+    border-bottom: none;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.game-header .container {
+    text-align: center;
+    justify-content: center;
+}
+
+.game-header h1 {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    text-align: center;
+    margin: 0;
+    padding: var(--spacing-lg) var(--spacing-xl);
+}
+
 .results-section {
     max-width: 900px;
     margin: 0 auto;

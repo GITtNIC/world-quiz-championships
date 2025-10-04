@@ -1,0 +1,490 @@
+/**
+ * Main game logic for World Flag Championships
+ */
+
+// Global game state
+let gameState = {
+    countries: [],
+    currentQuestionIndex: 0,
+    score: 0,
+    timer: null,
+    timeLimit: 180, // 3 minutes in seconds
+    timeRemaining: 180,
+    attempts: {},
+    gameActive: false,
+    totalQuestions: 20,
+    awaitingAcknowledgment: false, // Track if waiting for player acknowledgment after 2 wrong attempts
+    lastCorrectAnswer: null // Store the correct answer for validation
+};
+
+/**
+ * Load countries data from JSON file
+ */
+async function loadCountriesData() {
+    try {
+        const response = await fetch('data/countries.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const countriesData = await response.json();
+
+        if (!countriesData.countries || !countriesData.continents) {
+            throw new Error('Invalid countries data format');
+        }
+
+        return countriesData;
+
+    } catch (error) {
+        console.error('Error loading countries data:', error);
+        throw error;
+    }
+}
+
+/**
+ * Initialize the game
+ */
+async function initGame() {
+    try {
+        // Load game settings
+        const settings = Storage.get('gameSettings');
+        if (!settings) {
+            ErrorHandler.showMessage('No game settings found. Redirecting to setup.');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+            return;
+        }
+
+        // Load countries data
+        const countriesData = await loadCountriesData();
+        gameState.countries = countriesData.countries.filter(country =>
+            settings.selectedCountryIds.includes(country.id)
+        );
+
+        if (gameState.countries.length === 0) {
+            ErrorHandler.showMessage('No countries selected. Redirecting to setup.');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+            return;
+        }
+
+        // Initialize game state
+        gameState.timeLimit = settings.timeLimit || 180;
+        gameState.timeRemaining = gameState.timeLimit;
+        gameState.totalQuestions = Math.min(20, gameState.countries.length);
+
+        // Shuffle countries for random order
+        shuffleArray(gameState.countries);
+
+        // Set up UI
+        setupUI();
+
+        // Start the game
+        startGame();
+
+    } catch (error) {
+        console.error('Failed to initialize game:', error);
+        ErrorHandler.showMessage('Failed to load game data. Please try again.');
+    }
+}
+
+/**
+ * Set up the game UI
+ */
+function setupUI() {
+    updateScore(0);
+    updateProgress(0, gameState.totalQuestions);
+    updateTimer(gameState.timeRemaining);
+
+    // Set up input handlers
+    const answerInput = document.getElementById('answer-input');
+    if (answerInput) {
+        answerInput.addEventListener('keypress', handleAnswerKeypress);
+    }
+
+    // Set up keyboard shortcuts
+    document.addEventListener('keydown', handleGlobalKeydown);
+}
+
+/**
+ * Start the game
+ */
+function startGame() {
+    gameState.gameActive = true;
+
+    if (gameState.timeLimit > 0) {
+        startTimer();
+    }
+
+    showNextQuestion();
+}
+
+/**
+ * Handle answer input
+ */
+function handleAnswerKeypress(event) {
+    if (event.key === 'Enter' && gameState.gameActive) {
+        submitAnswer();
+    }
+}
+
+/**
+ * Handle global keyboard events
+ */
+function handleGlobalKeydown(event) {
+    if (!gameState.gameActive) return;
+
+    // Escape to quit
+    if (event.key === 'Escape') {
+        quitGame();
+    }
+}
+
+/**
+ * Show the next question
+ */
+function showNextQuestion() {
+    if (gameState.currentQuestionIndex >= gameState.totalQuestions) {
+        endGame();
+        return;
+    }
+
+    const country = gameState.countries[gameState.currentQuestionIndex];
+    const answerInput = document.getElementById('answer-input');
+    const feedbackElement = document.getElementById('feedback');
+    const attemptElement = document.getElementById('attempt-text');
+
+    // Reset acknowledgment state
+    gameState.awaitingAcknowledgment = false;
+    gameState.lastCorrectAnswer = null;
+
+    // Reset UI
+    if (answerInput) {
+        answerInput.value = '';
+        answerInput.focus();
+    }
+
+    if (feedbackElement) {
+        feedbackElement.textContent = '';
+    }
+
+    // Set attempt text
+    const attempts = gameState.attempts[country.id] || 0;
+    if (attemptElement) {
+        if (attempts === 0) {
+            attemptElement.textContent = 'First Try';
+        } else {
+            attemptElement.textContent = 'Second Try';
+        }
+    }
+
+    // Load the flag
+    loadFlag(country);
+
+    gameState.gameActive = true;
+}
+
+/**
+ * Load and display a flag
+ */
+function loadFlag(country) {
+    const flagImg = document.getElementById('flag-img');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    if (!flagImg || !loadingSpinner) return;
+
+    // Show loading spinner
+    loadingSpinner.style.display = 'flex';
+    flagImg.style.display = 'none';
+
+    // Use the SVG blob loading method for reliable SVG display
+    loadFlagAlternative(country);
+}
+
+/**
+ * Alternative flag loading method
+ */
+function loadFlagAlternative(country) {
+    const flagImg = document.getElementById('flag-img');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    if (!flagImg) return;
+
+    // Try loading as SVG content
+    fetch(country.flagPath)
+        .then(response => response.text())
+        .then(svgContent => {
+            // Create a blob URL for SVG or use inline SVG
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            flagImg.src = url;
+            flagImg.onload = () => {
+                loadingSpinner.style.display = 'none';
+                flagImg.style.display = 'block';
+            };
+        })
+        .catch(error => {
+            console.error('Failed to load flag as SVG:', error);
+            showErrorPlaceholder();
+        });
+}
+
+/**
+ * Show error placeholder for flag
+ */
+function showErrorPlaceholder() {
+    const flagImg = document.getElementById('flag-img');
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    if (flagImg) {
+        flagImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA0MCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjMwIiBmaWxsPSIjZTJlOGYwIi8+Cjx0ZXh0IHg9IjIwIiB5PSIxNSIgZm9udC1mYW1pbHk9ImFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOWNhM2FmIiB0ZXh0LWFuY2hvcj0iYWlkIGltaWQiPk4vQTwvdGV4dD4KPC9zdmc+';
+        flagImg.alt = 'Flag not available';
+        flagImg.onload();
+    }
+
+    if (loadingSpinner) {
+        loadingSpinner.style.display = 'none';
+        flagImg.style.display = 'block';
+    }
+}
+
+/**
+ * Submit an answer
+ */
+function submitAnswer() {
+    if (!gameState.gameActive) return;
+
+    const answerInput = document.getElementById('answer-input');
+    const feedbackElement = document.getElementById('feedback');
+    const attemptElement = document.getElementById('attempt-text');
+
+    if (!answerInput || !feedbackElement || !attemptElement) return;
+
+    const userAnswer = answerInput.value.trim().toLowerCase();
+    const country = gameState.countries[gameState.currentQuestionIndex];
+
+    // Handle acknowledgment case (after 2 wrong attempts)
+    if (gameState.awaitingAcknowledgment) {
+        if (!userAnswer) {
+            // Player pressed Enter with empty field - acknowledge and move on
+            moveToNextQuestion();
+        } else {
+            // Check if they typed the correct answer
+            const isCorrectNow = GameLogic.validateAnswer(userAnswer, country);
+            if (isCorrectNow) {
+                // They got it right now - give them 5 points for learning
+                gameState.score += 5;
+                updateScore(gameState.score);
+                showFeedback(`Correct! +5 points for getting it right!`, 'success');
+                setTimeout(() => {
+                    moveToNextQuestion();
+                }, 2500);
+            } else {
+                // Still wrong - encourage them to try the correct answer or acknowledge
+                showFeedback(`Still incorrect. Type '${country.name}' to practice, or press Enter to continue`, 'warning');
+                answerInput.value = '';
+                answerInput.focus();
+            }
+        }
+        return;
+    }
+
+    if (!userAnswer) {
+        showFeedback('Please enter an answer', 'warning');
+        return;
+    }
+
+    // Validate answer
+    const isCorrect = GameLogic.validateAnswer(userAnswer, country);
+
+    // Track attempts
+    if (!gameState.attempts[country.id]) {
+        gameState.attempts[country.id] = 0;
+    }
+
+    gameState.attempts[country.id]++;
+
+    if (isCorrect) {
+        // Correct answer
+        const points = gameState.attempts[country.id] === 1 ? 10 : 5;
+        gameState.score += points;
+        updateScore(gameState.score);
+
+        showFeedback(`Correct! +${points} points`, 'success');
+
+        // Move to next question after delay
+        setTimeout(() => {
+            gameState.currentQuestionIndex++;
+            updateProgress(gameState.currentQuestionIndex, gameState.totalQuestions);
+            showNextQuestion();
+        }, 2000);
+
+    } else {
+        // Wrong answer
+        if (gameState.attempts[country.id] >= 2) {
+            // Second attempt failed - show correct answer and wait for acknowledgment
+            gameState.awaitingAcknowledgment = true;
+            gameState.lastCorrectAnswer = country.name;
+            showFeedback(`Wrong! The correct answer is: ${country.name}. Type it correctly for +5 points, or press Enter to continue`, 'error');
+            attemptElement.textContent = 'Type correct answer or press Enter';
+            answerInput.value = '';
+            answerInput.focus();
+
+        } else {
+            // First attempt failed - allow second try
+            showFeedback('Wrong! Try again', 'warning');
+            attemptElement.textContent = 'Second Try';
+            answerInput.value = '';
+            answerInput.focus();
+        }
+    }
+}
+
+/**
+ * Move to the next question and reset states
+ */
+function moveToNextQuestion() {
+    gameState.awaitingAcknowledgment = false;
+    gameState.lastCorrectAnswer = null;
+    gameState.currentQuestionIndex++;
+    updateProgress(gameState.currentQuestionIndex, gameState.totalQuestions);
+    showNextQuestion();
+}
+
+/**
+ * Show feedback to the user
+ */
+function showFeedback(message, type) {
+    const feedbackElement = document.getElementById('feedback');
+    if (!feedbackElement) return;
+
+    feedbackElement.textContent = message;
+    feedbackElement.className = `feedback-display ${type}`;
+}
+
+/**
+ * Update score display
+ */
+function updateScore(score) {
+    const scoreElement = document.getElementById('score');
+    if (scoreElement) {
+        scoreElement.textContent = score;
+    }
+}
+
+/**
+ * Update progress display
+ */
+function updateProgress(current, total) {
+    const progressElement = document.getElementById('progress');
+    if (progressElement) {
+        progressElement.textContent = `${current + 1} / ${total}`;
+    }
+}
+
+/**
+ * Start the game timer
+ */
+function startTimer() {
+    if (gameState.timer) clearInterval(gameState.timer);
+
+    gameState.timer = setInterval(() => {
+        gameState.timeRemaining--;
+
+        if (gameState.timeRemaining <= 0) {
+            endGame();
+        }
+
+        updateTimer(gameState.timeRemaining);
+    }, 1000);
+}
+
+/**
+ * Update timer display
+ */
+function updateTimer(seconds) {
+    const timerElement = document.getElementById('timer');
+    if (!timerElement) return;
+
+    if (gameState.timeLimit === 0) {
+        timerElement.textContent = '∞';
+        return;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    timerElement.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * End the game
+ */
+function endGame() {
+    gameState.gameActive = false;
+    if (gameState.timer) clearInterval(gameState.timer);
+
+    // Save results
+    const results = {
+        score: gameState.score,
+        totalQuestions: gameState.totalQuestions,
+        timeLimit: gameState.timeLimit,
+        completedQuestions: gameState.currentQuestionIndex,
+        date: new Date().toISOString()
+    };
+
+    if (!Storage.set('gameResults', results)) {
+        console.error('Failed to save game results');
+    }
+
+    // Navigate to results page
+    setTimeout(() => {
+        window.location.href = 'results.html';
+    }, 1000);
+}
+
+/**
+ * Quit the game
+ */
+function quitGame() {
+    const modal = document.getElementById('quit-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+/**
+ * Cancel quit
+ */
+function cancelQuit() {
+    const modal = document.getElementById('quit-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Confirm quit
+ */
+function confirmQuit() {
+    gameState.gameActive = false;
+    if (gameState.timer) clearInterval(gameState.timer);
+
+    window.location.href = 'index.html';
+}
+
+/**
+ * Utility function to shuffle array
+ */
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// Initialize game when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initGame();
+});

@@ -1,0 +1,316 @@
+/* Game Screen Styles */
+
+.game-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.flag-display {
+    margin-bottom: var(--spacing-xl);
+}
+
+.flag-container {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.flag-image {
+    max-width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.input-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.attempt-indicator {
+    margin-bottom: var(--spacing-md);
+}
+
+.attempt-indicator span {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.attempt-indicator span.wrong {
+    background: var(--warning-color);
+}
+
+.attempt-indicator span.revealed {
+    background: var(--error-color);
+}
+
+#answer-input {
+    max-width: 400px;
+    margin: 0 auto var(--spacing-md) auto;
+    display: block;
+    font-size: var(--font-size-lg);
+    text-align: center;
+}
+
+.feedback-display {
+    min-height: 24px;
+    font-weight: var(--font-weight-medium);
+    transition: all 0.3s ease;
+}
+
+.feedback-display.correct {
+    color: var(--success-color);
+    font-size: var(--font-size-lg);
+}
+
+.feedback-display.wrong {
+    color: var(--error-color);
+    font-size: var(--font-size-lg);
+}
+
+.feedback-display.revealed {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.game-instructions {
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.game-instructions p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.game-instructions strong {
+    color: var(--text-primary);
+}
+
+/* Quit Button */
+.quit-btn {
+    background-color: var(--danger-color);
+}
+
+.quit-btn:hover {
+    background-color: #b91c1c;
+}
+
+/* Modal Specific Styles */
+#quit-modal .modal-content {
+    text-align: center;
+}
+
+#quit-modal h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+#quit-modal p {
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+/* Animation Classes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.4s ease;
+}
+
+/* Loading Animation */
+.loading-spinner {
+    display: inline-block;
+}
+
+.loading-spinner::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin-left: var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Cursor states */
+.country-btn,
+.continent-btn {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Focus states for accessibility */
+.country-btn:focus,
+.continent-btn:focus,
+#answer-input:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Keyboard navigation */
+.country-btn:active,
+.continent-btn:active {
+    transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-section {
+        margin: 0 var(--spacing-md);
+    }
+
+    .flag-container {
+        padding: var(--spacing-lg);
+        min-height: 180px;
+    }
+
+    .flag-image {
+        max-height: 120px;
+    }
+
+    .input-section {
+        padding: var(--spacing-lg);
+    }
+
+    #answer-input {
+        font-size: var(--font-size-base);
+        max-width: 300px;
+    }
+
+    .game-instructions {
+        padding: var(--spacing-md);
+    }
+
+    .game-instructions p {
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .flag-container {
+        padding: var(--spacing-md);
+        min-height: 150px;
+    }
+
+    .flag-image {
+        max-height: 100px;
+    }
+
+    .input-section {
+        padding: var(--spacing-md);
+    }
+
+    #answer-input {
+        font-size: var(--font-size-base);
+        max-width: 280px;
+    }
+
+    .attempt-indicator span {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.75rem;
+    }
+
+    .feedback-display.correct,
+    .feedback-display.wrong {
+        font-size: var(--font-size-base);
+    }
+
+    .game-stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .stat-item {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        text-align: left;
+    }
+
+    .stat-value {
+        margin-left: auto;
+    }
+}
+
+/* Auto-focus for touch devices */
+@media (hover: none) and (pointer: coarse) {
+    #answer-input:focus {
+        outline: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .feedback-display.correct {
+        background: var(--success-color);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius);
+    }
+
+    .feedback-display.wrong {
+        background: var(--error-color);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Flag Championships - Game</title>
+    <link rel="stylesheet" href="../../../css/global.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <header class="game-header">
+        <div class="container">
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Score:</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time:</span>
+                    <span class="stat-value" id="timer">3:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Progress:</span>
+                    <span class="stat-value" id="progress">1 / 20</span>
+                </div>
+            </div>
+            <button class="btn btn-danger quit-btn" onclick="quitGame()">Quit Game</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="game-section">
+                <div class="flag-display">
+                    <div class="flag-container">
+                        <img id="flag-img" alt="Country flag" class="flag-image" src="" style="display: none;">
+                        <div class="loading-spinner" id="loading-spinner">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="attempt-indicator">
+                        <span id="attempt-text">First Try</span>
+                    </div>
+                    <input type="text" id="answer-input" placeholder="Type the country name..." autocomplete="off" autofocus>
+                    <div class="feedback-display" id="feedback"></div>
+                </div>
+
+                <div class="game-instructions">
+                    <p>Identify the country flag above. Press Enter to submit.</p>
+                    <p>You get 2 chances - first try: <strong>10 points</strong>, second try: <strong>5 points</strong></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Quit confirmation modal -->
+    <div class="modal" id="quit-modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Quit Game?</h3>
+            <p>Your progress will be lost. Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="cancelQuit()">Keep Playing</button>
+                <button class="btn btn-danger" onclick="confirmQuit()">Quit Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../js/shared/utils.js"></script>
+    <script src="js/answerValidator.js"></script>
+    <script src="js/gameLogic.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

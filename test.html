@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <button onclick="alert('DOM works!')">Test DOM</button>
+    <div id="test-div">Testing...</div>
+
+    <script src="js/shared/utils.js"></script>
+    <script src="js/shared/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded');
+
+            // Test if DOM utilities work
+            if (typeof DOM !== 'undefined') {
+                console.log('DOM utility available');
+                const testDiv = DOM.$('test-div');
+                if (testDiv) {
+                    testDiv.textContent = 'DOM utility works!';
+                }
+            } else {
+                console.error('DOM utility NOT available');
+                document.getElementById('test-div').textContent = 'DOM utility NOT available!';
+            }
+
+            // Test if LoadingIndicator works
+            if (typeof LoadingIndicator !== 'undefined') {
+                console.log('LoadingIndicator available');
+            } else {
+                console.error('LoadingIndicator NOT available');
+            }
+
+            // Test if Storage works
+            if (typeof Storage !== 'undefined') {
+                console.log('Storage available');
+            } else {
+                console.error('Storage NOT available');
+            }
+        });
+    </script>
+</body>
+</html>

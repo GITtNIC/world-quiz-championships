@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Quiz Championships</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">World Quiz Championships</h1>
+            <p class="site-subtitle">Test your knowledge of geography, math, and more!</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section class="game-modes">
+                <div class="game-mode-card active" data-game="geography">
+                    <h2 class="game-mode-title">Geography Games</h2>
+                    <p class="game-mode-description">Explore the world and test your country knowledge!</p>
+                    <button class="btn btn-primary game-mode-btn">Play Geography</button>
+                </div>
+
+                <div class="game-mode-card disabled" data-game="math">
+                    <h2 class="game-mode-title">Math Games</h2>
+                    <p class="game-mode-description">Challenge your mathematical skills (Coming Soon)</p>
+                    <button class="btn btn-primary game-mode-btn" disabled>Coming Soon</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/router.js"></script>
+</body>
+</html>

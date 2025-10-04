@@ -1,0 +1,181 @@
+/* Landing Page Styles */
+
+.site-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.site-title {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.site-subtitle {
+    font-size: var(--font-size-lg);
+    opacity: 0.9;
+    font-weight: var(--font-weight-normal);
+}
+
+.game-modes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.game-mode-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-2xl);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.game-mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(37, 99, 235, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.game-mode-card:hover::before {
+    opacity: 1;
+}
+
+.game-mode-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.game-mode-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.game-mode-card.disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+}
+
+.game-mode-card.disabled .game-mode-btn {
+    cursor: not-allowed;
+}
+
+.game-mode-card.disabled::before {
+    display: none;
+}
+
+.game-mode-card.active {
+    border: 2px solid var(--primary-color);
+}
+
+.game-mode-title {
+    font-size: var(--font-size-2xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    z-index: 2;
+}
+
+.game-mode-description {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+    z-index: 2;
+}
+
+.game-mode-btn {
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+}
+
+.game-mode-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Geography Game Extra Styling */
+.game-mode-card[data-game="geography"] .game-mode-card::before {
+    background: linear-gradient(135deg, transparent 0%, rgba(5, 150, 105, 0.05) 100%);
+}
+
+/* Math Game Placeholder */
+.game-mode-card[data-game="math"] .game-mode-card::before {
+    background: linear-gradient(135deg, transparent 0%, rgba(217, 119, 6, 0.05) 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .site-header {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    .site-title {
+        font-size: var(--font-size-3xl);
+    }
+
+    .game-modes {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        margin-top: var(--spacing-lg);
+    }
+
+    .game-mode-card {
+        padding: var(--spacing-xl);
+    }
+
+    .game-mode-title {
+        font-size: var(--font-size-xl);
+    }
+}
+
+@media (max-width: 480px) {
+    .site-header {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+
+    .site-title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .site-subtitle {
+        font-size: var(--font-size-base);
+    }
+
+    .game-mode-card {
+        padding: var(--spacing-lg);
+    }
+}
+
+/* Coming Soon Badge for Disabled Games */
+.game-mode-card.disabled::after {
+    content: 'Coming Soon';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--warning-color);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    z-index: 3;
+}

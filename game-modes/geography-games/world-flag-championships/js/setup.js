@@ -7,6 +7,7 @@
 let countriesData = null;
 let selectedCountryIds = new Set();
 let continentStates = {};
+let territoryIncluded = true; // Territory filter state
 
 // Continent configuration (human-readable names)
 const CONTINENTS = {
@@ -16,10 +17,19 @@ const CONTINENTS = {
     'North America': 'North America',
     'South America': 'South America',
     'Oceania': 'Oceania',
+    'Antarctica': 'Antarctica'
+};
+
+// Filter buttons configuration (reordered with Territory after Antarctica, removed ocean regions)
+const FILTER_BUTTONS = {
+    'Africa': 'Africa',
+    'Asia': 'Asia',
+    'Europe': 'Europe',
+    'North America': 'North America',
+    'South America': 'South America',
+    'Oceania': 'Oceania',
     'Antarctica': 'Antarctica',
-    'Atlantic Ocean': 'Atlantic Ocean',
-    'Indian Ocean': 'Indian Ocean',
-    'South Atlantic': 'South Atlantic'
+    'territories': 'Territory'
 };
 
 /**
@@ -40,7 +50,7 @@ async function initSetup() {
         initializeContinentStates();
 
         // Render UI
-        renderContinentButtons();
+        renderFilterButtons();
         renderCountryButtons();
 
         // Update UI
@@ -96,23 +106,28 @@ function initializeContinentStates() {
 }
 
 /**
- * Render continent selection buttons
+ * Render filter buttons (territories and continents)
  */
-function renderContinentButtons() {
-    const container = document.getElementById('continent-buttons');
+function renderFilterButtons() {
+    const container = document.getElementById('filter-buttons');
     if (!container) return;
 
     container.innerHTML = '';
 
-    Object.keys(CONTINENTS).forEach(continent => {
+    Object.keys(FILTER_BUTTONS).forEach(filterKey => {
         const button = DOM.create('button', {
-            class: 'continent-btn active',
-            text: CONTINENTS[continent],
-            'data-continent': continent
+            class: 'filter-btn active',
+            text: FILTER_BUTTONS[filterKey],
+            'data-filter': filterKey
         });
 
+        // Set territory button to be selected by default (active)
+        if (filterKey === 'territories') {
+            territoryIncluded = true; // Ensure it's set to true
+        }
+
         // Add click handler
-        button.addEventListener('click', () => toggleContinent(continent, button));
+        button.addEventListener('click', () => toggleFilter(filterKey, button));
 
         container.appendChild(button);
     });
@@ -161,30 +176,81 @@ function renderCountryButtons() {
 }
 
 /**
- * Toggle entire continent selection
+ * Toggle filter (either continent or territory)
  */
-function toggleContinent(continent, buttonElement) {
+function toggleFilter(filterKey, buttonElement) {
     const isCurrentlyActive = buttonElement.classList.contains('active');
-    const countryIdsInContinent = countriesData.continents[continent] || [];
     const shouldSelect = !isCurrentlyActive;
 
-    // Update continent state
-    continentStates[continent] = shouldSelect;
+    if (filterKey === 'territories') {
+        // Handle territory filter
+        territoryIncluded = shouldSelect;
+        applyFilters();
+    } else {
+        // Handle continent filter
+        continentStates[filterKey] = shouldSelect;
+        applyFilters();
+    }
 
-    // Update country selections
-    countryIdsInContinent.forEach(countryId => {
-        if (shouldSelect) {
-            selectedCountryIds.add(countryId);
-        } else {
-            selectedCountryIds.delete(countryId);
-        }
-    });
+    // Update button state
+    buttonElement.classList.toggle('active', shouldSelect);
 
     // Update UI
-    buttonElement.classList.toggle('active', shouldSelect);
     updateCountryButtons();
+    updateFilterButtons();
     updateSelectedCounter();
     updateStartButton();
+}
+
+/**
+ * Apply all filters to update country selection
+ */
+function applyFilters() {
+    // Start with all countries, then filter based on active filters
+    let filteredCountryIds = new Set(countriesData.countries.map(c => c.id));
+
+    // Apply continent filters
+    const activeContinents = Object.keys(continentStates).filter(cont => continentStates[cont]);
+    if (activeContinents.length < Object.keys(continentStates).length) {
+        // If not all continents are selected, filter to only include selected continents
+        filteredCountryIds.clear();
+        activeContinents.forEach(continent => {
+            const countryIds = countriesData.continents[continent] || [];
+            countryIds.forEach(id => filteredCountryIds.add(id));
+        });
+    }
+
+    // Apply territory filter
+    if (!territoryIncluded) {
+        // Remove all territories from the filtered set
+        const territoryCountries = countriesData.countries
+            .filter(country => country.status === 'territory')
+            .map(country => country.id);
+        territoryCountries.forEach(id => filteredCountryIds.delete(id));
+    }
+
+    // Update selected countries to match filtered results
+    selectedCountryIds = filteredCountryIds;
+}
+
+/**
+ * Update filter button states based on current selections
+ */
+function updateFilterButtons() {
+    // Update continent filter buttons
+    Object.keys(CONTINENTS).forEach(continent => {
+        const button = document.querySelector(`[data-filter="${continent}"]`);
+        if (!button) return;
+
+        const isActive = continentStates[continent];
+        button.classList.toggle('active', isActive);
+    });
+
+    // Update territory filter button
+    const territoryButton = document.querySelector('[data-filter="territories"]');
+    if (territoryButton) {
+        territoryButton.classList.toggle('active', territoryIncluded);
+    }
 }
 
 /**

@@ -49,15 +49,15 @@
     color: var(--text-secondary);
 }
 
-/* Continent Buttons */
-.continent-buttons {
+/* Filter Buttons */
+.filter-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
 }
 
-.continent-btn {
+.filter-btn {
     background: var(--background-light);
     border: 2px solid var(--border-color);
     color: var(--text-primary);
@@ -74,12 +74,12 @@
     justify-content: center;
 }
 
-.continent-btn:hover {
+.filter-btn:hover {
     border-color: var(--primary-color);
     background-color: var(--white);
 }
 
-.continent-btn.active {
+.filter-btn.active {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
     color: var(--white);

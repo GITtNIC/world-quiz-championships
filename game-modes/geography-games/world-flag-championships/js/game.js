@@ -190,6 +190,9 @@ function showNextQuestion() {
     // Load the flag
     loadFlag(country);
 
+    // Display status label
+    displayStatusLabel(country);
+
     gameState.gameActive = true;
 }
 
@@ -512,6 +515,35 @@ function confirmQuit() {
     if (gameState.timer) clearInterval(gameState.timer);
 
     window.location.href = 'index.html';
+}
+
+/**
+ * Display country status label
+ */
+function displayStatusLabel(country) {
+    const statusLabel = document.getElementById('status-label');
+    if (!statusLabel) return;
+
+    let displayText = '';
+    switch (country.status) {
+        case 'official':
+            displayText = 'UN official';
+            break;
+        case 'territory':
+            displayText = 'territory';
+            break;
+        case 'observer':
+            displayText = 'observer State';
+            break;
+        case 'disputed':
+            displayText = 'disputed';
+            break;
+        default:
+            displayText = '';
+    }
+
+    statusLabel.textContent = displayText;
+    statusLabel.className = `status-label status-${country.status}`;
 }
 
 /**

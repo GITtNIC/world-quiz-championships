@@ -7,7 +7,7 @@
 let countriesData = null;
 let selectedCountryIds = new Set();
 let continentStates = {};
-let territoryIncluded = true; // Territory filter state
+let selectionMode = 'both'; // Selection mode: 'countries', 'both', 'territories'
 
 // Continent configuration (human-readable names)
 const CONTINENTS = {
@@ -20,7 +20,7 @@ const CONTINENTS = {
     'Antarctica': 'Antarctica'
 };
 
-// Filter buttons configuration (reordered with Territory after Antarctica, removed ocean regions)
+// Filter buttons configuration (continents only)
 const FILTER_BUTTONS = {
     'Africa': 'Africa',
     'Asia': 'Asia',
@@ -28,8 +28,7 @@ const FILTER_BUTTONS = {
     'North America': 'North America',
     'South America': 'South America',
     'Oceania': 'Oceania',
-    'Antarctica': 'Antarctica',
-    'territories': 'Territory'
+    'Antarctica': 'Antarctica'
 };
 
 /**
@@ -106,7 +105,7 @@ function initializeContinentStates() {
 }
 
 /**
- * Render filter buttons (territories and continents)
+ * Render filter buttons with count information
  */
 function renderFilterButtons() {
     const container = document.getElementById('filter-buttons');
@@ -114,17 +113,42 @@ function renderFilterButtons() {
 
     container.innerHTML = '';
 
+    const counts = getContinentCounts();
+
     Object.keys(FILTER_BUTTONS).forEach(filterKey => {
+        let buttonText = FILTER_BUTTONS[filterKey];
+        let buttonClass = 'filter-btn continent-filter';
+
+        // Get count display based on selection mode
+        let countDisplay = '';
+        if (counts[filterKey]) {
+            if (selectionMode === 'countries') {
+                countDisplay = `(${counts[filterKey].countries})`;
+            } else if (selectionMode === 'territories') {
+                countDisplay = `(${counts[filterKey].territories})`;
+            } else { // both
+                const { countries: countryCount, territories: territoryCount } = counts[filterKey];
+                if (territoryCount > 0) {
+                    countDisplay = `(${countryCount} + ${territoryCount})`;
+                } else {
+                    countDisplay = `(${countryCount})`;
+                }
+            }
+        }
+
+        buttonText = `${buttonText} ${countDisplay}`;
+
         const button = DOM.create('button', {
-            class: 'filter-btn active',
-            text: FILTER_BUTTONS[filterKey],
+            class: buttonClass + (continentStates[filterKey] ? ' active' : ''),
             'data-filter': filterKey
         });
 
-        // Set territory button to be selected by default (active)
-        if (filterKey === 'territories') {
-            territoryIncluded = true; // Ensure it's set to true
-        }
+        // Create text span
+        const textSpan = DOM.create('span', {
+            class: 'filter-text',
+            text: buttonText
+        });
+        button.appendChild(textSpan);
 
         // Add click handler
         button.addEventListener('click', () => toggleFilter(filterKey, button));
@@ -176,28 +200,21 @@ function renderCountryButtons() {
 }
 
 /**
- * Toggle filter (either continent or territory)
+ * Toggle continent filter
  */
 function toggleFilter(filterKey, buttonElement) {
     const isCurrentlyActive = buttonElement.classList.contains('active');
     const shouldSelect = !isCurrentlyActive;
 
-    if (filterKey === 'territories') {
-        // Handle territory filter
-        territoryIncluded = shouldSelect;
-        applyFilters();
-    } else {
-        // Handle continent filter
-        continentStates[filterKey] = shouldSelect;
-        applyFilters();
-    }
+    // Handle continent filter
+    continentStates[filterKey] = shouldSelect;
+    applyFilters();
 
     // Update button state
     buttonElement.classList.toggle('active', shouldSelect);
 
     // Update UI
     updateCountryButtons();
-    updateFilterButtons();
     updateSelectedCounter();
     updateStartButton();
 }
@@ -206,27 +223,45 @@ function toggleFilter(filterKey, buttonElement) {
  * Apply all filters to update country selection
  */
 function applyFilters() {
-    // Start with all countries, then filter based on active filters
-    let filteredCountryIds = new Set(countriesData.countries.map(c => c.id));
+    let filteredCountryIds = new Set();
 
-    // Apply continent filters
+    // Get active continents
     const activeContinents = Object.keys(continentStates).filter(cont => continentStates[cont]);
-    if (activeContinents.length < Object.keys(continentStates).length) {
-        // If not all continents are selected, filter to only include selected continents
-        filteredCountryIds.clear();
+
+    // Filter logic based on selection mode
+    if (activeContinents.length > 0) {
         activeContinents.forEach(continent => {
             const countryIds = countriesData.continents[continent] || [];
-            countryIds.forEach(id => filteredCountryIds.add(id));
+            countryIds.forEach(id => {
+                const country = countriesData.countries.find(c => c.id === id);
+                if (!country) return;
+
+                // Apply selection mode filter
+                const shouldInclude = (selectionMode === 'both') ||
+                    (selectionMode === 'countries' && country.status !== 'territory') ||
+                    (selectionMode === 'territories' && country.status === 'territory');
+
+                if (shouldInclude) {
+                    filteredCountryIds.add(id);
+                }
+            });
         });
     }
-
-    // Apply territory filter
-    if (!territoryIncluded) {
-        // Remove all territories from the filtered set
-        const territoryCountries = countriesData.countries
+    // If NO continents selected but selection mode is territories, show ALL territories globally
+    else if (selectionMode === 'territories') {
+        countriesData.countries
             .filter(country => country.status === 'territory')
-            .map(country => country.id);
-        territoryCountries.forEach(id => filteredCountryIds.delete(id));
+            .forEach(country => filteredCountryIds.add(country.id));
+    }
+    // If NO continents selected and selection mode is countries, show ALL countries globally
+    else if (selectionMode === 'countries') {
+        countriesData.countries
+            .filter(country => country.status !== 'territory')
+            .forEach(country => filteredCountryIds.add(country.id));
+    }
+    // If NO continents selected and selection mode is both, show ALL countries and territories
+    else if (selectionMode === 'both') {
+        countriesData.countries.forEach(country => filteredCountryIds.add(country.id));
     }
 
     // Update selected countries to match filtered results
@@ -237,20 +272,8 @@ function applyFilters() {
  * Update filter button states based on current selections
  */
 function updateFilterButtons() {
-    // Update continent filter buttons
-    Object.keys(CONTINENTS).forEach(continent => {
-        const button = document.querySelector(`[data-filter="${continent}"]`);
-        if (!button) return;
-
-        const isActive = continentStates[continent];
-        button.classList.toggle('active', isActive);
-    });
-
-    // Update territory filter button
-    const territoryButton = document.querySelector('[data-filter="territories"]');
-    if (territoryButton) {
-        territoryButton.classList.toggle('active', territoryIncluded);
-    }
+    // No need to do anything here anymore since renderFilterButtons handles everything
+    // and we no longer have a territories button
 }
 
 /**
@@ -301,12 +324,22 @@ function updateContinentButtons() {
 }
 
 /**
- * Update selected countries counter
+ * Update selected countries counter with breakdown
  */
 function updateSelectedCounter() {
     const counter = document.getElementById('selected-count');
-    if (counter) {
-        counter.textContent = selectedCountryIds.size;
+    if (!counter) return;
+
+    const selectedCountries = countriesData.countries.filter(c => selectedCountryIds.has(c.id));
+    const selectedTerritories = selectedCountries.filter(c => c.status === 'territory');
+    const selectedRegularCountries = selectedCountries.filter(c => c.status !== 'territory');
+
+    if (selectedTerritories.length > 0) {
+        counter.textContent = `${selectedCountryIds.size} selected (${selectedRegularCountries.length} countries, ${selectedTerritories.length} territories)`;
+        counter.classList.add('with-breakdown');
+    } else {
+        counter.textContent = `${selectedCountryIds.size} selected`;
+        counter.classList.remove('with-breakdown');
     }
 }
 
@@ -339,6 +372,18 @@ function setupEventListeners() {
             }
         });
     }
+
+    // Selection mode radio buttons
+    const selectionRadios = document.querySelectorAll('input[name="selection-mode"]');
+    selectionRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            selectionMode = e.target.value;
+            applyFilters();
+            renderFilterButtons();
+            updateSelectedCounter();
+            updateStartButton();
+        });
+    });
 }
 
 /**
@@ -356,7 +401,8 @@ function startGame() {
     const gameSettings = {
         selectedCountryIds: Array.from(selectedCountryIds),
         timeLimit: timeLimit,
-        continentStates: { ...continentStates }
+        continentStates: { ...continentStates },
+        selectionMode: selectionMode
     };
 
     if (!Storage.set('gameSettings', gameSettings)) {
@@ -381,6 +427,33 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+
+/**
+ * Get territory and country counts for each continent
+ */
+function getContinentCounts() {
+    if (!countriesData) return {};
+
+    const counts = {};
+
+    Object.keys(CONTINENTS).forEach(continent => {
+        const countryIds = countriesData.continents[continent] || [];
+        const countries = countryIds.map(id => countriesData.countries.find(c => c.id === id)).filter(c => c);
+
+        counts[continent] = {
+            total: countries.length,
+            territories: countries.filter(c => c.status === 'territory').length,
+            countries: countries.filter(c => c.status !== 'territory').length
+        };
+    });
+
+    // Also add total territories
+    const allTerritories = countriesData.countries.filter(c => c.status === 'territory');
+    counts.totalTerritories = allTerritories.length;
+
+    return counts;
+}
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initSetup);

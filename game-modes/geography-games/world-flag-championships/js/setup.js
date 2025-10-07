@@ -27,8 +27,7 @@ const FILTER_BUTTONS = {
     'Europe': 'Europe',
     'North America': 'North America',
     'South America': 'South America',
-    'Oceania': 'Oceania',
-    'Antarctica': 'Antarctica'
+    'Oceania': 'Oceania'
 };
 
 /**
@@ -121,22 +120,17 @@ function renderFilterButtons() {
 
         // Get count display based on selection mode
         let countDisplay = '';
-        if (counts[filterKey]) {
+        if (counts[filterKey] && selectionMode !== 'both') {
             if (selectionMode === 'countries') {
                 countDisplay = `(${counts[filterKey].countries})`;
             } else if (selectionMode === 'territories') {
                 countDisplay = `(${counts[filterKey].territories})`;
-            } else { // both
-                const { countries: countryCount, territories: territoryCount } = counts[filterKey];
-                if (territoryCount > 0) {
-                    countDisplay = `(${countryCount} + ${territoryCount})`;
-                } else {
-                    countDisplay = `(${countryCount})`;
-                }
             }
         }
 
-        buttonText = `${buttonText} ${countDisplay}`;
+        if (countDisplay) {
+            buttonText = `${buttonText} ${countDisplay}`;
+        }
 
         const button = DOM.create('button', {
             class: buttonClass + (continentStates[filterKey] ? ' active' : ''),

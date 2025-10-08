@@ -135,6 +135,7 @@
 
 .results-actions .btn {
     min-width: 140px;
+    max-width: 200px;
 }
 
 /* Animations */

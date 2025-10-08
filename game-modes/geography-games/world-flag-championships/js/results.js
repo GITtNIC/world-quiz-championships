@@ -36,19 +36,23 @@ function displayResults() {
     updateElement('grade', grade.grade);
     document.getElementById('grade').className = `grade grade-${grade.grade}`;
 
-    // Update performance summary - use saved values and calculate total attempts
+    // Update performance summary - use what was actually completed during gameplay
     const totalAttempts = calculateTotalAttempts();
-    updateElement('total-flags', totalAttempts);
+    const flagsPlayed = gameResults.completedQuestions || gameResults.totalQuestions; // Fallback for older saves
+    updateElement('total-flags', flagsPlayed);
     updateElement('correct-first', gameResults.correctFirstTry || 0);
     updateElement('correct-second', gameResults.correctSecondTry || 0);
     updateElement('failed', gameResults.failedQuestions || 0);
 
-    // Calculate and update detailed statistics
+    // Calculate and update detailed statistics based on actual flags played
     const correctQuestions = (gameResults.correctFirstTry || 0) + (gameResults.correctSecondTry || 0);
-    const accuracy = gameResults.totalQuestions > 0 ? Math.round((correctQuestions / gameResults.totalQuestions) * 100) : 0;
-    const firstTryRate = gameResults.totalQuestions > 0 ? Math.round((gameResults.correctFirstTry / gameResults.totalQuestions) * 100) : 0;
+    const maxPossibleScore = flagsPlayed * 10;
+    const accuracy = maxPossibleScore > 0 ? Math.round((gameResults.score / maxPossibleScore) * 100) : 0;
+    const firstTryRate = flagsPlayed > 0 ? Math.round((gameResults.correctFirstTry / flagsPlayed) * 100) : 0;
     const timeTakenSeconds = gameResults.timeTaken || gameResults.timeLimit;
-    const actualFlagsPerMinute = timeTakenSeconds > 0 ? (gameResults.totalQuestions / (timeTakenSeconds / 60)) : gameResults.totalQuestions;
+    // Use completed flags for per-minute calculation, not total available countries
+    const completedQuestions = gameResults.completedQuestions || 0;
+    const actualFlagsPerMinute = timeTakenSeconds > 0 ? (completedQuestions / (timeTakenSeconds / 60)) : completedQuestions;
 
     updateElement('accuracy', accuracy + '%');
     updateElement('first-try-rate', firstTryRate + '%');
@@ -61,10 +65,11 @@ function displayResults() {
  * Calculate performance grade
  */
 function calculateGrade() {
-    // Use the actual calculated accuracy and firstTryRate from displayResults
-    const correctQuestions = (gameResults.correctFirstTry || 0) + (gameResults.correctSecondTry || 0);
-    const accuracy = gameResults.totalQuestions > 0 ? (correctQuestions / gameResults.totalQuestions) * 100 : 0;
-    const firstTryRate = gameResults.totalQuestions > 0 ? (gameResults.correctFirstTry / gameResults.totalQuestions) * 100 : 0;
+    // Use score-based accuracy and first-try rate calculations based on actual flags played
+    const flagsPlayed = gameResults.completedQuestions || gameResults.totalQuestions; // Fallback for older saves
+    const maxPossibleScore = flagsPlayed * 10;
+    const accuracy = maxPossibleScore > 0 ? (gameResults.score / maxPossibleScore) * 100 : 0;
+    const firstTryRate = flagsPlayed > 0 ? (gameResults.correctFirstTry / flagsPlayed) * 100 : 0;
 
     if (accuracy >= 95 && firstTryRate >= 70) {
         return { grade: 'S', color: 'gold' };
@@ -111,13 +116,13 @@ function playAgain() {
 }
 
 /**
- * Start a new game (go to setup)
+ * Start a new game (with same settings)
  */
 function newGame() {
-    // Clear current settings and navigate to setup screen
+    // Clear results and progress but keep settings - go back to setup with preserved settings
     Storage.remove('gameResults');
     Storage.remove('quizProgress'); // Clear any game progress too
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; // Go back to filter/setup page with preserved settings
 }
 
 /**

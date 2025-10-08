@@ -43,9 +43,30 @@ async function initSetup() {
 
         loadingIndicator.hide();
 
-        // Initialize state
-        selectedCountryIds = new Set(countriesData.countries.map(c => c.id));
-        initializeContinentStates();
+        // Check for saved game settings and restore them, or use defaults
+        const savedSettings = Storage.get('gameSettings');
+        if (savedSettings) {
+            // Restore saved settings
+            selectedCountryIds = new Set(savedSettings.selectedCountryIds || countriesData.countries.map(c => c.id));
+            continentStates = { ...savedSettings.continentStates };
+            selectionMode = savedSettings.selectionMode || 'both';
+
+            // Restore time limit
+            const timeSelect = document.getElementById('time-select');
+            if (timeSelect && savedSettings.timeLimit) {
+                timeSelect.value = savedSettings.timeLimit.toString();
+            }
+
+            // Restore selection mode radio buttons
+            const selectionRadio = document.querySelector(`input[name="selection-mode"][value="${selectionMode}"]`);
+            if (selectionRadio) {
+                selectionRadio.checked = true;
+            }
+        } else {
+            // Initialize with defaults
+            selectedCountryIds = new Set(countriesData.countries.map(c => c.id));
+            initializeContinentStates();
+        }
 
         // Render UI
         renderFilterButtons();
@@ -57,9 +78,9 @@ async function initSetup() {
         // Set up event listeners
         setupEventListeners();
 
-        // Set default time limit
+        // Set default time limit if not already set from saved settings
         const timeSelect = document.getElementById('time-select');
-        if (timeSelect) {
+        if (timeSelect && !timeSelect.value) {
             timeSelect.value = '180'; // 3 minutes default
         }
 
@@ -258,6 +279,9 @@ function applyFilters() {
         countriesData.countries.forEach(country => filteredCountryIds.add(country.id));
     }
 
+    // Filter out countries we don't want in the game (like Antarctica)
+    filteredCountryIds = new Set([...filteredCountryIds].filter(id => id !== 'ATA'));
+
     // Update selected countries to match filtered results
     selectedCountryIds = filteredCountryIds;
 }
@@ -348,6 +372,39 @@ function updateStartButton() {
 }
 
 /**
+ * Clear all game settings and reset to defaults
+ */
+function clearSettings() {
+    // Clear saved settings from storage
+    Storage.remove('gameSettings');
+
+    // Reset to all countries selected
+    selectedCountryIds = new Set(countriesData.countries.map(c => c.id));
+
+    // Reset all continents to active
+    initializeContinentStates();
+
+    // Reset selection mode to "both"
+    selectionMode = 'both';
+    const selectionRadio = document.querySelector('input[name="selection-mode"][value="both"]');
+    if (selectionRadio) {
+        selectionRadio.checked = true;
+    }
+
+    // Reset time limit to 3 minutes
+    const timeSelect = document.getElementById('time-select');
+    if (timeSelect) {
+        timeSelect.value = '180';
+    }
+
+    // Update UI
+    renderFilterButtons();
+    renderCountryButtons();
+    updateSelectedCounter();
+    updateStartButton();
+}
+
+/**
  * Set up event listeners
  */
 function setupEventListeners() {
@@ -355,6 +412,12 @@ function setupEventListeners() {
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.addEventListener('click', startGame);
+    }
+
+    // Clear settings button
+    const clearBtn = document.getElementById('clear-settings-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSettings);
     }
 
     // Enter key on time select should not submit form

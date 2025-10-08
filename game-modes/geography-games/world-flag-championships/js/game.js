@@ -530,13 +530,13 @@ function displayStatusLabel(country) {
             displayText = 'UN official';
             break;
         case 'territory':
-            displayText = 'territory';
+            displayText = 'Territory';
             break;
         case 'observer':
-            displayText = 'observer State';
+            displayText = 'Observer State';
             break;
         case 'disputed':
-            displayText = 'disputed';
+            displayText = 'Disputed';
             break;
         default:
             displayText = '';

@@ -20,8 +20,13 @@ function initResults() {
         return;
     }
 
-    // Display results
-    displayResults();
+    // Initialize translations first
+    // Initialize translations first then load results
+    // Wait for translations to initialize before loading results
+    translator.initialize();
+    setTimeout(() => {
+        displayResults(); 
+    }, 100);
 }
 
 /**
@@ -42,12 +47,13 @@ function displayResults() {
     updateElement('total-flags', flagsPlayed);
     updateElement('correct-first', gameResults.correctFirstTry || 0);
     updateElement('correct-second', gameResults.correctSecondTry || 0);
+    updateElement('correct-third', gameResults.correctThirdTry || 0);
     updateElement('failed', gameResults.failedQuestions || 0);
 
     // Calculate and update detailed statistics based on actual flags played
-    const correctQuestions = (gameResults.correctFirstTry || 0) + (gameResults.correctSecondTry || 0);
+    const correctQuestions = (gameResults.correctFirstTry || 0) + (gameResults.correctSecondTry || 0) + (gameResults.correctThirdTry || 0);
     const maxPossibleScore = flagsPlayed * 10;
-    const accuracy = maxPossibleScore > 0 ? Math.round((gameResults.score / maxPossibleScore) * 100) : 0;
+    const accuracy = flagsPlayed > 0 ? Math.round((correctQuestions / flagsPlayed) * 100) : 0;
     const firstTryRate = flagsPlayed > 0 ? Math.round((gameResults.correctFirstTry / flagsPlayed) * 100) : 0;
     const timeTakenSeconds = gameResults.timeTaken || gameResults.timeLimit;
     // Use completed flags for per-minute calculation, not total available countries
@@ -65,10 +71,10 @@ function displayResults() {
  * Calculate performance grade
  */
 function calculateGrade() {
-    // Use score-based accuracy and first-try rate calculations based on actual flags played
+    // Use correct identifications-based accuracy and first-try rate calculations
     const flagsPlayed = gameResults.completedQuestions || gameResults.totalQuestions; // Fallback for older saves
-    const maxPossibleScore = flagsPlayed * 10;
-    const accuracy = maxPossibleScore > 0 ? (gameResults.score / maxPossibleScore) * 100 : 0;
+    const correctQuestions = (gameResults.correctFirstTry || 0) + (gameResults.correctSecondTry || 0) + (gameResults.correctThirdTry || 0);
+    const accuracy = flagsPlayed > 0 ? (correctQuestions / flagsPlayed) * 100 : 0;
     const firstTryRate = flagsPlayed > 0 ? (gameResults.correctFirstTry / flagsPlayed) * 100 : 0;
 
     if (accuracy >= 95 && firstTryRate >= 70) {
@@ -90,12 +96,14 @@ function calculateGrade() {
 function calculateTotalAttempts() {
     const firstTryCorrect = gameResults.correctFirstTry || 0;
     const secondTryCorrect = gameResults.correctSecondTry || 0;
+    const thirdTryCorrect = gameResults.correctThirdTry || 0;
     const failed = gameResults.failedQuestions || 0;
 
     // Each first-try correct = 1 attempt
-    // Each second-try correct = 2 attempts (wrong + right)
+    // Each second-try correct = 2 attempts (1 wrong + 1 right)
+    // Each third-try correct = 3 attempts (2 wrong + 1 right)
     // Each failed question = 3 attempts (three wrong answers)
-    return firstTryCorrect * 1 + secondTryCorrect * 2 + failed * 3;
+    return firstTryCorrect * 1 + secondTryCorrect * 2 + thirdTryCorrect * 3 + failed * 3;
 }
 
 /**
@@ -147,5 +155,11 @@ function updateElement(id, value) {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    initResults();
+    if (typeof translator !== 'undefined') {
+        translator.initialize();
+        initResults();
+    } else {
+        console.error('Translator not loaded');
+        setTimeout(() => location.reload(), 500); // Retry after short delay
+    }
 });

@@ -187,7 +187,7 @@ country_data = {
     'CYM': {'name': 'Caymanøyene', 'continent': 'North America', 'status': 'territory'},
     'CRI': {'name': 'Costa Rica', 'continent': 'North America', 'status': 'official'},
     'CUB': {'name': 'Cuba', 'continent': 'North America', 'status': 'official'},
-    'CUW': {'name': 'Curaçao', 'continent': 'North America', 'status': 'territory'},
+    'CUW': {'name': 'Curacao', 'continent': 'North America', 'status': 'territory'},
     'DMA': {'name': 'Dominica', 'continent': 'North America', 'status': 'official'},
     'DOM': {'name': 'Den dominikanske republikk', 'continent': 'North America', 'status': 'official'},
     'SLV': {'name': 'El Salvador', 'continent': 'North America', 'status': 'official'},

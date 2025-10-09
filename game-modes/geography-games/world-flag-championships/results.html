@@ -11,7 +11,7 @@
 <body>
     <header class="game-header">
         <div class="container">
-            <h1>Game Complete!</h1>
+            <h1 data-translate="GameComplete"></h1>
         </div>
     </header>
 
@@ -20,71 +20,76 @@
             <div class="results-section">
                 <div class="score-display">
                     <div class="final-score">
-                        <h2>Final Score</h2>
+                        <h2 data-translate="finalScore">Final Score</h2>
                         <span class="score-value" id="final-score">0</span>
                     </div>
                     <div class="performance-grade">
-                        <h3>Grade: <span id="grade" class="grade">S</span></h3>
+                        <h3><span data-translate="grade"></span>: <span id="grade" class="grade">S</span></h3>
                     </div>
                 </div>
 
                 <div class="results-breakdown">
-                    <h3>Performance Summary</h3>
+                    <h3 data-translate="performanceSummary">Performance Summary</h3>
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <span class="stat-label">Total Flags:</span>
+                            <span class="stat-label" data-translate="totalFlags">Total Flags:</span>
                             <span class="stat-value" id="total-flags">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">First Try:</span>
+                            <span class="stat-label" data-translate="firstTry">First Try:</span>
                             <span class="stat-value" id="correct-first">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Second Try:</span>
+                            <span class="stat-label" data-translate="secondTry">Second Try:</span>
                             <span class="stat-value" id="correct-second">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Failed:</span>
+                            <span class="stat-label" data-translate="thirdTry">Third Try:</span>
+                            <span class="stat-value" id="correct-third">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label" data-translate="failed">Failed:</span>
                             <span class="stat-value" id="failed">0</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="advanced-stats">
-                    <h3>Detailed Statistics</h3>
+                    <h3 data-translate="detailedStatistics">Detailed Statistics</h3>
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <span class="stat-label">Accuracy:</span>
+                            <span class="stat-label" data-translate="accuracy">Accuracy:</span>
                             <span class="stat-value" id="accuracy">0%</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">First-Try Rate:</span>
+                            <span class="stat-label" data-translate="firstTryRate">First-Try Rate:</span>
                             <span class="stat-value" id="first-try-rate">0%</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Flags per Minute:</span>
+                            <span class="stat-label" data-translate="flagsPerMinute">Flags per Minute:</span>
                             <span class="stat-value" id="flags-per-minute">0.0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Best Streak:</span>
+                            <span class="stat-label" data-translate="bestStreak">Best Streak:</span>
                             <span class="stat-value" id="best-streak">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Time Taken:</span>
+                            <span class="stat-label" data-translate="timeTaken">Time Taken:</span>
                             <span class="stat-value" id="time-taken">0:00</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="results-actions">
-                    <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
-                    <button class="btn btn-secondary" onclick="newGame()">New Game</button>
-                    <button class="btn btn-secondary" onclick="mainMenu()">Main Menu</button>
+                    <button class="btn btn-primary" onclick="playAgain()" data-translate="playAgain">Play Again</button>
+                    <button class="btn btn-secondary" onclick="newGame()" data-translate="newGame">New Game</button>
+                    <button class="btn btn-secondary" onclick="mainMenu()" data-translate="mainMenu">Main Menu</button>
                 </div>
             </div>
         </div>
     </main>
 
+    <script src="../../../js/translations.js"></script>
     <script src="../../../js/shared/utils.js"></script>
     <script src="js/results.js"></script>
 </body>

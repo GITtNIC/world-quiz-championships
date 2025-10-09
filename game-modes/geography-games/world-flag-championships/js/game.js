@@ -18,6 +18,7 @@ let gameState = {
     startTime: null, // Track when the game started
     correctFirstTry: 0, // Track first try correct answers
     correctSecondTry: 0, // Track second try correct answers
+    correctThirdTry: 0, // Track third try correct answers
     failedQuestions: 0, // Track third try wrong answers
     bestStreak: 0, // Track the best streak of correct answers
     currentStreak: 0 // Current streak counter
@@ -30,7 +31,7 @@ async function loadCountriesData() {
     try {
         // Determine which data file to load based on current language
         const currentLanguage = localStorage.getItem('wqc-language') || 'en';
-        const dataFile = currentLanguage === 'no' ? 'data/countries_no.json' : 'data/countries.json';
+        const dataFile = `data/countries_${currentLanguage}.json`;
 
         const response = await fetch(dataFile);
         if (!response.ok) {
@@ -56,10 +57,12 @@ async function loadCountriesData() {
  */
 async function initGame() {
     try {
+        // Initialize translations
+        await translator.initialize();
         // Load game settings
         const settings = Storage.get('gameSettings');
         if (!settings) {
-            ErrorHandler.showMessage('No game settings found. Redirecting to setup.');
+            ErrorHandler.showMessage(translator.getTranslation('settingsNotFound'));
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 2000);
@@ -73,7 +76,7 @@ async function initGame() {
         );
 
         if (gameState.countries.length === 0) {
-            ErrorHandler.showMessage('No countries selected. Redirecting to setup.');
+            ErrorHandler.showMessage(translator.getTranslation('noCountriesSelected'));
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 2000);
@@ -96,7 +99,7 @@ async function initGame() {
 
     } catch (error) {
         console.error('Failed to initialize game:', error);
-        ErrorHandler.showMessage('Failed to load game data. Please try again.');
+        ErrorHandler.showMessage(translator.getTranslation('dataLoadFailed'));
     }
 }
 
@@ -112,6 +115,7 @@ function setupUI() {
     const answerInput = document.getElementById('answer-input');
     if (answerInput) {
         answerInput.addEventListener('keypress', handleAnswerKeypress);
+        answerInput.placeholder = translator.getTranslation('typeCountryName');
     }
 
     // Set up keyboard shortcuts
@@ -185,9 +189,9 @@ function showNextQuestion() {
     const attempts = gameState.attempts[country.id] || 0;
     if (attemptElement) {
         if (attempts === 0) {
-            attemptElement.textContent = 'First Try';
+            attemptElement.textContent = translator.getTranslation('firstTryLabel');
         } else {
-            attemptElement.textContent = 'Second Try';
+            attemptElement.textContent = translator.getTranslation('secondTry');
         }
     }
 
@@ -287,7 +291,7 @@ function submitAnswer() {
     const userAnswer = answerInput.value.trim().toLowerCase();
 
     if (!userAnswer) {
-        showFeedback('Please enter an answer', 'warning');
+        showFeedback(translator.getTranslation('enterAnswer'), 'warning');
         return;
     }
 
@@ -307,8 +311,9 @@ function submitAnswer() {
             gameState.correctFirstTry++;
         } else if (gameState.attempts[country.id] === 2) {
             gameState.correctSecondTry++;
+        } else if (gameState.attempts[country.id] === 3) {
+            gameState.correctThirdTry++;
         }
-        // Third try correct doesn't count toward first/second stats
 
         // Update streak
         gameState.currentStreak++;
@@ -331,9 +336,9 @@ function submitAnswer() {
 
         let feedbackMessage;
         if (points === 0) {
-            feedbackMessage = 'Correct!';
+            feedbackMessage = translator.getTranslation('correctLabel');
         } else {
-            feedbackMessage = `Correct! +${points} points`;
+            feedbackMessage = translator.getTranslation('correctWithPoints').replace('{{points}}', points.toString());
         }
 
         showFeedback(feedbackMessage, 'success');
@@ -354,7 +359,7 @@ function submitAnswer() {
             gameState.failedQuestions++;
 
             // Third attempt failed - show correct answer and move on (0 points)
-            showFeedback(`Incorrect! The answer was: ${country.name}`, 'error');
+            showFeedback(translator.getTranslation('answerWas').replace('{{answer}}', country.name), 'error');
 
             // Move to next question after delay
             setTimeout(() => {
@@ -365,15 +370,15 @@ function submitAnswer() {
 
         } else if (gameState.attempts[country.id] === 2) {
             // Second attempt failed - show correct answer as hint for educational try
-            showFeedback(`The correct answer is: ${country.name}`, 'info');
-            attemptElement.textContent = 'Final Try (0 points)';
+            showFeedback(translator.getTranslation('correctAnswerIs').replace('{{answer}}', country.name), 'info');
+            attemptElement.textContent = translator.getTranslation('finalTry');
             answerInput.value = '';
             answerInput.focus();
 
         } else {
             // First attempt failed - allow second try
-            showFeedback('Wrong! Try again', 'warning');
-            attemptElement.textContent = 'Second Try';
+            showFeedback(translator.getTranslation('wrongTryAgain'), 'warning');
+            attemptElement.textContent = translator.getTranslation('secondTry');
             answerInput.value = '';
             answerInput.focus();
         }
@@ -476,6 +481,7 @@ function endGame() {
         completedQuestions: gameState.currentQuestionIndex,
         correctFirstTry: gameState.correctFirstTry,
         correctSecondTry: gameState.correctSecondTry,
+        correctThirdTry: gameState.correctThirdTry,
         failedQuestions: gameState.failedQuestions,
         bestStreak: gameState.bestStreak,
         date: new Date().toISOString()
@@ -531,16 +537,16 @@ function displayStatusLabel(country) {
     let displayText = '';
     switch (country.status) {
         case 'official':
-            displayText = 'UN official';
+            displayText = translator.getTranslation('unOfficial');
             break;
         case 'territory':
-            displayText = 'Territory';
+            displayText = translator.getTranslation('territoryLabel');
             break;
         case 'observer':
-            displayText = 'Observer State';
+            displayText = translator.getTranslation('observerState');
             break;
         case 'disputed':
-            displayText = 'Disputed';
+            displayText = translator.getTranslation('disputedLabel');
             break;
         default:
             displayText = '';

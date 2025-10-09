@@ -84,7 +84,7 @@ const GameLogic = {
                 alternatives.push('South Sudan');
                 break;
             case 'MKD':
-                alternatives.push('North Macedonia', 'Macedonia');
+                alternatives.push('North Macedonia', 'Macedonia', 'Nord Makedonia', 'Makedonia');
                 break;
             case 'SWZ':
                 alternatives.push('Eswatini', 'Swaziland');

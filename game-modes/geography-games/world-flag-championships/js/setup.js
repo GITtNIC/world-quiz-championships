@@ -106,7 +106,7 @@ async function loadCountriesData() {
     try {
         // Determine which data file to load based on current language
         const currentLanguage = localStorage.getItem('wqc-language') || 'en';
-        const dataFile = currentLanguage === 'no' ? 'data/countries_no.json' : 'data/countries.json';
+        const dataFile = `data/countries_${currentLanguage}.json`;
 
         const response = await fetch(dataFile);
         if (!response.ok) {

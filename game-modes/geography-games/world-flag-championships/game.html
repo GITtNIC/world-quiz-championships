@@ -13,19 +13,19 @@
         <div class="container">
             <div class="game-stats">
                 <div class="stat-item">
-                    <span class="stat-label">Score:</span>
+                    <span class="stat-label" data-translate="scoreLabel">Score:</span>
                     <span class="stat-value" id="score">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Time:</span>
+                    <span class="stat-label" data-translate="timeLabel">Time:</span>
                     <span class="stat-value" id="timer">3:00</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Progress:</span>
+                    <span class="stat-label" data-translate="progressLabel">Progress:</span>
                     <span class="stat-value" id="progress">1 / 20</span>
                 </div>
             </div>
-            <button class="btn btn-danger quit-btn" onclick="quitGame()">Quit Game</button>
+            <button class="btn btn-danger quit-btn" onclick="quitGame()" data-translate="quitGame">Quit Game</button>
         </div>
     </header>
 
@@ -49,8 +49,8 @@
                 </div>
 
                 <div class="game-instructions">
-                    <p>Identify the country flag above. Press Enter to submit.</p>
-                    <p>You get 2 chances - first try: <strong>10 points</strong>, second try: <strong>5 points</strong></p>
+                    <p data-translate="identifyFlag">Identify the country flag above. Press Enter to submit.</p>
+                    <p data-translate="chancesInfo"></p>
                 </div>
             </div>
         </div>
@@ -59,16 +59,17 @@
     <!-- Quit confirmation modal -->
     <div class="modal" id="quit-modal" style="display: none;">
         <div class="modal-content">
-            <h3>Quit Game?</h3>
-            <p>Your progress will be lost. Are you sure?</p>
+            <h3 data-translate="quitModalTitle">Quit Game?</h3>
+            <p data-translate="quitModalMessage">Your progress will be lost. Are you sure?</p>
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="cancelQuit()">Keep Playing</button>
-                <button class="btn btn-danger" onclick="confirmQuit()">Quit Game</button>
+                <button class="btn btn-secondary" onclick="cancelQuit()" data-translate="keepPlaying">Keep Playing</button>
+                <button class="btn btn-danger" onclick="confirmQuit()" data-translate="quitGame">Quit Game</button>
             </div>
         </div>
     </div>
 
     <script src="../../../js/shared/utils.js"></script>
+    <script src="../../../js/translations.js"></script>
     <script src="js/answerValidator.js"></script>
     <script src="js/gameLogic.js"></script>
     <script src="js/game.js"></script>

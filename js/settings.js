@@ -15,7 +15,7 @@ class SettingsMenu {
         this.setupEventListeners();
     }
 
-    createMenu() {
+    async createMenu() {
         // Create hamburger button
         const hamburgerBtn = document.createElement('button');
         hamburgerBtn.className = 'hamburger-btn';
@@ -26,6 +26,34 @@ class SettingsMenu {
             <span class="hamburger-line"></span>
         `;
 
+        // Load available languages
+        let languages = [];
+        try {
+            const response = await fetch('/world-quiz-championships/assets/translations/languages.json');
+            if (response.ok) {
+                languages = await response.json();
+            } else {
+                // Fallback to hardcoded if fetch fails
+                languages = [
+                    { "code": "en", "name": "English", "flag": "🇺🇸" },
+                    { "code": "no", "name": "Norsk", "flag": "🇳🇴" }
+                ];
+            }
+        } catch (error) {
+            console.error('Failed to load languages:', error);
+            languages = [
+                { "code": "en", "name": "English", "flag": "🇺🇸" },
+                { "code": "no", "name": "Norsk", "flag": "🇳🇴" }
+            ];
+        }
+
+        // Create language options HTML
+        const languageOptionsHtml = languages.map(lang => `
+            <button class="language-option" data-language="${lang.code}">
+                <span class="language-flag">${lang.flag}</span> <span>${lang.name}</span>
+            </button>
+        `).join('');
+
         // Create dropdown menu
         const dropdown = document.createElement('div');
         dropdown.className = 'settings-dropdown';
@@ -33,12 +61,7 @@ class SettingsMenu {
             <div class="settings-section">
                 <h3 class="settings-title" data-translate="languageLabel">Language</h3>
                 <div class="language-options">
-                    <button class="language-option" data-language="en">
-                        <span class="language-flag">🇺🇸</span> <span data-translate="english">English</span>
-                    </button>
-                    <button class="language-option" data-language="no">
-                        <span class="language-flag">🇳🇴</span> <span data-translate="norwegian">Norsk</span>
-                    </button>
+                    ${languageOptionsHtml}
                 </div>
             </div>
             <div class="settings-section">

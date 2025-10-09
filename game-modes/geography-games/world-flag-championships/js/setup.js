@@ -9,25 +9,25 @@ let selectedCountryIds = new Set();
 let continentStates = {};
 let selectionMode = 'both'; // Selection mode: 'countries', 'both', 'territories'
 
-// Continent configuration (human-readable names)
+// Continent configuration (internal keys)
 const CONTINENTS = {
-    'Africa': 'Africa',
-    'Asia': 'Asia',
-    'Europe': 'Europe',
-    'North America': 'North America',
-    'South America': 'South America',
-    'Oceania': 'Oceania',
-    'Antarctica': 'Antarctica'
+    'Africa': 'africa',
+    'Asia': 'asia',
+    'Europe': 'europe',
+    'North America': 'northAmerica',
+    'South America': 'southAmerica',
+    'Oceania': 'oceania',
+    'Antarctica': 'antarctica'
 };
 
 // Filter buttons configuration (continents only)
 const FILTER_BUTTONS = {
-    'Africa': 'Africa',
-    'Asia': 'Asia',
-    'Europe': 'Europe',
-    'North America': 'North America',
-    'South America': 'South America',
-    'Oceania': 'Oceania'
+    'Africa': 'africa',
+    'Asia': 'asia',
+    'Europe': 'europe',
+    'North America': 'northAmerica',
+    'South America': 'southAmerica',
+    'Oceania': 'oceania'
 };
 
 /**
@@ -35,6 +35,9 @@ const FILTER_BUTTONS = {
  */
 async function initSetup() {
     try {
+        // Initialize translations and settings menu
+        translator.initialize();
+
         // Load countries data
         const loadingIndicator = new LoadingIndicator({ text: 'Loading countries...' });
         loadingIndicator.show(document.body);
@@ -78,6 +81,12 @@ async function initSetup() {
         // Set up event listeners
         setupEventListeners();
 
+        // Listen for language changes to update dynamic content
+        document.addEventListener('languageChanged', () => {
+            renderFilterButtons();
+            updateSelectedCounter();
+        });
+
         // Set default time limit if not already set from saved settings
         const timeSelect = document.getElementById('time-select');
         if (timeSelect && !timeSelect.value) {
@@ -95,7 +104,11 @@ async function initSetup() {
  */
 async function loadCountriesData() {
     try {
-        const response = await fetch('data/countries.json');
+        // Determine which data file to load based on current language
+        const currentLanguage = localStorage.getItem('wqc-language') || 'en';
+        const dataFile = currentLanguage === 'no' ? 'data/countries_no.json' : 'data/countries.json';
+
+        const response = await fetch(dataFile);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -136,7 +149,7 @@ function renderFilterButtons() {
     const counts = getContinentCounts();
 
     Object.keys(FILTER_BUTTONS).forEach(filterKey => {
-        let buttonText = FILTER_BUTTONS[filterKey];
+        let buttonText = translator.getTranslation(FILTER_BUTTONS[filterKey]);
         let buttonClass = 'filter-btn continent-filter';
 
         // Get count display based on selection mode
@@ -353,10 +366,14 @@ function updateSelectedCounter() {
     const selectedRegularCountries = selectedCountries.filter(c => c.status !== 'territory');
 
     if (selectedTerritories.length > 0) {
-        counter.textContent = `${selectedCountryIds.size} selected (${selectedRegularCountries.length} countries, ${selectedTerritories.length} territories)`;
+        const selectedText = translator.getTranslation('selected');
+        const countriesText = translator.getTranslation('countries');
+        const territoriesText = translator.getTranslation('territories');
+        counter.textContent = `${selectedCountryIds.size} ${selectedText} (${selectedRegularCountries.length} ${countriesText}, ${selectedTerritories.length} ${territoriesText})`;
         counter.classList.add('with-breakdown');
     } else {
-        counter.textContent = `${selectedCountryIds.size} selected`;
+        const selectedText = translator.getTranslation('selected');
+        counter.textContent = `${selectedCountryIds.size} ${selectedText}`;
         counter.classList.remove('with-breakdown');
     }
 }

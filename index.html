@@ -11,8 +11,8 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <h1 class="site-title">World Quiz Championships</h1>
-            <p class="site-subtitle">Test your knowledge of geography, math, and more!</p>
+            <h1 class="site-title" data-translate="siteTitle">World Quiz Championships</h1>
+            <p class="site-subtitle" data-translate="siteSubtitle">Test your knowledge of geography, math, and more!</p>
         </div>
     </header>
 
@@ -20,20 +20,22 @@
         <div class="container">
             <section class="game-modes">
                 <div class="game-mode-card active" data-game="geography">
-                    <h2 class="game-mode-title">Geography Games</h2>
-                    <p class="game-mode-description">Explore the world and test your country knowledge!</p>
-                    <button class="btn btn-primary game-mode-btn">Play Geography</button>
+                    <h2 class="game-mode-title" data-translate="geographyGames">Geography Games</h2>
+                    <p class="game-mode-description" data-translate="geographyDescription">Explore the world and test your country knowledge!</p>
+                    <button class="btn btn-primary game-mode-btn" data-translate="playGeography">Play Geography</button>
                 </div>
 
                 <div class="game-mode-card disabled" data-game="math">
-                    <h2 class="game-mode-title">Math Games</h2>
-                    <p class="game-mode-description">Challenge your mathematical skills (Coming Soon)</p>
-                    <button class="btn btn-primary game-mode-btn" disabled>Coming Soon</button>
+                    <h2 class="game-mode-title" data-translate="mathGames">Math Games</h2>
+                    <p class="game-mode-description" data-translate="mathDescription">Challenge your mathematical skills (Coming Soon)</p>
+                    <button class="btn btn-primary game-mode-btn" disabled data-translate="comingSoon">Coming Soon</button>
                 </div>
             </section>
         </div>
     </main>
 
+    <script src="js/translations.js"></script>
+    <script src="js/settings.js"></script>
     <script src="js/router.js"></script>
 </body>
 </html>

@@ -77,6 +77,11 @@ class Router {
 // Initialize router globally
 const router = new Router();
 
+// Initialize translation system when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    translator.initialize();
+});
+
 // Add routes for main landing page
 if (document.querySelector('.game-modes')) {
     // Only add routes on the main landing page

@@ -11,9 +11,9 @@
 <body>
     <header class="game-header">
         <div class="container">
-            <button class="back-btn" onclick="window.location.href='../../../index.html'">← Back to Main</button>
-            <h1>World Flag Championships</h1>
-            <button class="clear-settings-btn" id="clear-settings-btn">Clear Settings</button>
+            <button class="back-btn" data-translate="backToMain" onclick="window.location.href='../../../index.html'">← Back to Main</button>
+            <h1 data-translate="flagChampionshipsTitle">World Flag Championships</h1>
+            <button class="clear-settings-btn" id="clear-settings-btn" data-translate="clearSettings">Clear Settings</button>
         </div>
     </header>
 
@@ -21,21 +21,21 @@
         <div class="container">
             <div class="setup-section">
                 <div class="setup-step">
-                    <h2>Step 1: Select Regions</h2>
-                    <p>Choose which continents or regions you want to include in your quiz.</p>
+                    <h2 data-translate="step1Title">Step 1: Select Regions</h2>
+                    <p data-translate="step1Description">Choose which continents or regions you want to include in your quiz.</p>
 
                     <div class="selection-mode" id="selection-mode">
                         <label class="selection-mode-label">
                             <input type="radio" name="selection-mode" value="countries">
-                            <span>Countries Only</span>
+                            <span data-translate="countriesOnly">Countries Only</span>
                         </label>
                         <label class="selection-mode-label">
                             <input type="radio" name="selection-mode" value="both" checked>
-                            <span>Both</span>
+                            <span data-translate="both">Both</span>
                         </label>
                         <label class="selection-mode-label">
                             <input type="radio" name="selection-mode" value="territories">
-                            <span>Territories Only</span>
+                            <span data-translate="territoriesOnly">Territories Only</span>
                         </label>
                     </div>
 
@@ -45,8 +45,8 @@
                 </div>
 
                 <div class="setup-step">
-                    <h2>Step 2: Choose Countries</h2>
-                    <p>Fine-tune your selection by choosing specific countries.</p>
+                    <h2 data-translate="step2Title">Step 2: Choose Countries</h2>
+                    <p data-translate="step2Description">Fine-tune your selection by choosing specific countries.</p>
                     <div class="selected-info">
                         <span id="selected-count">197 countries selected</span>
                     </div>
@@ -56,28 +56,30 @@
                 </div>
 
                 <div class="setup-step">
-                    <h2>Step 3: Set Time Limit</h2>
-                    <p>How long do you want to play? (Default: 3 minutes)</p>
+                    <h2 data-translate="step3Title">Step 3: Set Time Limit</h2>
+                    <p data-translate="step3Description">How long do you want to play? (Default: 3 minutes)</p>
                     <div class="time-selector">
                         <select id="time-select">
-                            <option value="30">30 seconds (Very quick)</option>
-                            <option value="60">1 minute (Fast)</option>
-                            <option value="180">3 minutes (Standard)</option>
-                            <option value="300">5 minutes (Leisurely)</option>
-                            <option value="600">10 minutes (Long)</option>
-                            <option value="1200">20 minutes (Very long)</option>
-                            <option value="0">No limit (Endless)</option>
+                            <option value="30" data-translate="veryQuick">30 seconds (Very quick)</option>
+                            <option value="60" data-translate="fast">1 minute (Fast)</option>
+                            <option value="180" data-translate="standard">3 minutes (Standard)</option>
+                            <option value="300" data-translate="leisurely">5 minutes (Leisurely)</option>
+                            <option value="600" data-translate="long">10 minutes (Long)</option>
+                            <option value="1200" data-translate="veryLong">20 minutes (Very long)</option>
+                            <option value="0" data-translate="noLimit">No limit (Endless)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="setup-actions">
-                    <button class="btn btn-primary" id="start-btn">Start Game</button>
+                    <button class="btn btn-primary" id="start-btn" data-translate="startGame">Start Game</button>
                 </div>
             </div>
         </div>
     </main>
 
+    <script src="../../../js/translations.js"></script>
+    <script src="../../../js/settings.js"></script>
     <script src="../../../js/shared/utils.js"></script>
     <script src="../../../js/shared/components.js"></script>
     <script src="js/setup.js"></script>

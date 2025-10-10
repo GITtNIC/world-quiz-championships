@@ -8,8 +8,8 @@ let gameState = {
     currentQuestionIndex: 0,
     score: 0,
     timer: null,
-    timeLimit: 180, // 3 minutes in seconds
-    timeRemaining: 180,
+    timeLimit: 0, // No time limit for completion-based gameplay
+    elapsedTime: 0, // Track elapsed time instead of remaining time
     attempts: {},
     gameActive: false,
     totalQuestions: 20,
@@ -21,7 +21,9 @@ let gameState = {
     correctThirdTry: 0, // Track third try correct answers
     failedQuestions: 0, // Track third try wrong answers
     bestStreak: 0, // Track the best streak of correct answers
-    currentStreak: 0 // Current streak counter
+    currentStreak: 0, // Current streak counter
+    secondTryCountries: [], // Countries gotten wrong on first try but correct on second
+    failedCountries: [] // Countries failed on all three attempts
 };
 
 /**
@@ -84,8 +86,8 @@ async function initGame() {
         }
 
         // Initialize game state
-        gameState.timeLimit = settings.timeLimit || 180;
-        gameState.timeRemaining = gameState.timeLimit;
+        gameState.timeLimit = settings.timeLimit || 0; // No time limit for completion-based gameplay
+        gameState.elapsedTime = 0; // Start elapsed time at 0
         gameState.totalQuestions = gameState.countries.length;
 
         // Shuffle countries for random order
@@ -109,7 +111,7 @@ async function initGame() {
 function setupUI() {
     updateScore(0);
     updateProgress(0, gameState.totalQuestions);
-    updateTimer(gameState.timeRemaining);
+    updateTimer(gameState.elapsedTime);
 
     // Set up input handlers
     const answerInput = document.getElementById('answer-input');
@@ -129,9 +131,8 @@ function startGame() {
     gameState.gameActive = true;
     gameState.startTime = Date.now(); // Record when the game starts for accurate time calculation
 
-    if (gameState.timeLimit > 0) {
-        startTimer();
-    }
+    // Always start timer to track elapsed time for completion-based gameplay
+    startTimer();
 
     showNextQuestion();
 }
@@ -311,6 +312,7 @@ function submitAnswer() {
             gameState.correctFirstTry++;
         } else if (gameState.attempts[country.id] === 2) {
             gameState.correctSecondTry++;
+            gameState.secondTryCountries.push(country); // Track country gotten wrong initially but correct on second try
         } else if (gameState.attempts[country.id] === 3) {
             gameState.correctThirdTry++;
         }
@@ -357,6 +359,7 @@ function submitAnswer() {
         if (gameState.attempts[country.id] >= 3) {
             // Third attempt failed - track as failed question
             gameState.failedQuestions++;
+            gameState.failedCountries.push(country); // Track countries that were failed on all attempts
 
             // Third attempt failed - show correct answer and move on (0 points)
             showFeedback(translator.getTranslation('answerWas').replace('{{answer}}', country.name), 'error');
@@ -434,13 +437,8 @@ function startTimer() {
     if (gameState.timer) clearInterval(gameState.timer);
 
     gameState.timer = setInterval(() => {
-        gameState.timeRemaining--;
-
-        if (gameState.timeRemaining <= 0) {
-            endGame();
-        }
-
-        updateTimer(gameState.timeRemaining);
+        gameState.elapsedTime++;
+        updateTimer(gameState.elapsedTime);
     }, 1000);
 }
 
@@ -450,11 +448,6 @@ function startTimer() {
 function updateTimer(seconds) {
     const timerElement = document.getElementById('timer');
     if (!timerElement) return;
-
-    if (gameState.timeLimit === 0) {
-        timerElement.textContent = '∞';
-        return;
-    }
 
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -484,6 +477,8 @@ function endGame() {
         correctThirdTry: gameState.correctThirdTry,
         failedQuestions: gameState.failedQuestions,
         bestStreak: gameState.bestStreak,
+        secondTryCountries: gameState.secondTryCountries,
+        failedCountries: gameState.failedCountries,
         date: new Date().toISOString()
     };
 

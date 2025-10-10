@@ -171,6 +171,7 @@ country_data = {
     'CHE': {'name': 'Sveits', 'continent': 'Europe', 'status': 'official'},
     'UKR': {'name': 'Ukraina', 'continent': 'Europe', 'status': 'official'},
     'GBR': {'name': 'Storbritannia', 'continent': 'Europe', 'status': 'official'},
+    'GRL': {'name': 'Grønland', 'continent': 'Europe', 'status': 'territory'},
     'VAT': {'name': 'Vatikanstaten', 'continent': 'Europe', 'status': 'observer'},
 
     # Nord-Amerika
@@ -213,7 +214,6 @@ country_data = {
     'USA': {'name': 'USA', 'continent': 'North America', 'status': 'official'},
     'VGB': {'name': 'De britiske jomfruøyene', 'continent': 'North America', 'status': 'territory'},
     'VIR': {'name': 'De amerikanske jomfruøyene', 'continent': 'North America', 'status': 'territory'},
-    'GRL': {'name': 'Grønland', 'continent': 'North America', 'status': 'territory'},
     'MTQ': {'name': 'Martinique', 'continent': 'North America', 'status': 'territory'},
 
     # Sør-Amerika

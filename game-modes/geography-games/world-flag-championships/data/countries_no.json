@@ -1023,7 +1023,7 @@
     {
       "id": "GRL",
       "name": "Grønland",
-      "continent": "North America",
+      "continent": "Europe",
       "flagPath": "assets/flags/svg/GRL.svg",
       "status": "territory"
     },

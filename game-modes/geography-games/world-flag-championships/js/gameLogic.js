@@ -110,8 +110,8 @@ const GameLogic = {
      * @returns {boolean} True if they match sufficiently
      */
     checkPartialMatch: function(userAnswer, correctAnswer) {
-        // Exact substring match (for abbreviated answers)
-        if (userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer)) {
+        // Exact substring match (for abbreviated answers) - requires minimum length to prevent single letter matches
+        if (userAnswer.length >= 3 && (userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer))) {
             return true;
         }
 

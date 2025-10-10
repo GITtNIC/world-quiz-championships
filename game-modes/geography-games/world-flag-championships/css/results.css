@@ -316,3 +316,82 @@
 .results-actions .btn {
     touch-action: manipulation;
 }
+
+/* Practice More Section */
+.practice-more {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.practice-more h3 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.practice-countries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.practice-country-item {
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.practice-country-item:hover {
+    transform: translateY(-2px);
+}
+
+.practice-flag {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.practice-country-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+/* Responsive design for practice more */
+@media (max-width: 768px) {
+    .practice-countries-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: var(--spacing-sm);
+    }
+
+    .practice-flag {
+        width: 50px;
+        height: 37px;
+    }
+
+    .practice-more {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .practice-countries-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .practice-country-name {
+        font-size: 0.75rem;
+    }
+}

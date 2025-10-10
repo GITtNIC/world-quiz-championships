@@ -54,11 +54,7 @@ async function initSetup() {
             continentStates = { ...savedSettings.continentStates };
             selectionMode = savedSettings.selectionMode || 'both';
 
-            // Restore time limit
-            const timeSelect = document.getElementById('time-select');
-            if (timeSelect && savedSettings.timeLimit) {
-                timeSelect.value = savedSettings.timeLimit.toString();
-            }
+
 
             // Restore selection mode radio buttons
             const selectionRadio = document.querySelector(`input[name="selection-mode"][value="${selectionMode}"]`);
@@ -86,12 +82,6 @@ async function initSetup() {
             renderFilterButtons();
             updateSelectedCounter();
         });
-
-        // Set default time limit if not already set from saved settings
-        const timeSelect = document.getElementById('time-select');
-        if (timeSelect && !timeSelect.value) {
-            timeSelect.value = '180'; // 3 minutes default
-        }
 
     } catch (error) {
         console.error('Failed to initialize setup:', error);
@@ -408,12 +398,6 @@ function clearSettings() {
         selectionRadio.checked = true;
     }
 
-    // Reset time limit to 3 minutes
-    const timeSelect = document.getElementById('time-select');
-    if (timeSelect) {
-        timeSelect.value = '180';
-    }
-
     // Update UI
     renderFilterButtons();
     renderCountryButtons();
@@ -435,16 +419,6 @@ function setupEventListeners() {
     const clearBtn = document.getElementById('clear-settings-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', clearSettings);
-    }
-
-    // Enter key on time select should not submit form
-    const timeSelect = document.getElementById('time-select');
-    if (timeSelect) {
-        timeSelect.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-            }
-        });
     }
 
     // Selection mode radio buttons
@@ -469,7 +443,7 @@ function startGame() {
         return;
     }
 
-    const timeLimit = parseInt(document.getElementById('time-select').value) || 0;
+    const timeLimit = 0; // No time limit for completion-based gameplay
 
     // Save game settings
     const gameSettings = {
